@@ -64,8 +64,28 @@ impl ClientState {
     }
 }
 
+use clap::Parser;
+use std::net::SocketAddr;
+
+#[derive(Parser, Debug, Clone)]
+#[command(name = "rendezvous-server")]
+struct Args {
+    #[arg(long, default_value_t = 9000)]
+    http_port: u16,
+    #[arg(long, default_value_t = 9001)]
+    punch_port: u16,
+    #[arg(long, default_value_t = 9002)]
+    relay_port: u16,
+}
+
+fn bind_addr(port: u16) -> SocketAddr {
+    SocketAddr::from(([0, 0, 0, 0], port))
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+
     let rooms = HashMap::new();
     let clients = HashMap::new();
     let inner = Arc::new(RwLock::new(AppStateInner { rooms, clients }));
@@ -84,8 +104,19 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    tokio::spawn(punch_coordinator("0.0.0.0:9000".parse()?, state.clone()));
-    tokio::spawn(relay_server("0.0.0.0:9001".parse()?, state.clone()));
+    let punch_addr = bind_addr(args.punch_port);
+    let relay_addr = bind_addr(args.relay_port);
+    let http_addr = bind_addr(args.http_port);
+
+    tracing::info!(
+        "Starting server with tcp port {} punch port {} relay port {}",
+        args.http_port,
+        args.punch_port,
+        args.relay_port
+    );
+
+    tokio::spawn(punch_coordinator(punch_addr, state.clone()));
+    tokio::spawn(relay_server(relay_addr, state.clone()));
 
     let app = Router::new()
         .layer(TraceLayer::new_for_http())
@@ -94,7 +125,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/leave_room", post(leave_room))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+    let listener = tokio::net::TcpListener::bind(http_addr).await?;
     axum::serve(listener, app).await?;
     Ok(())
 }
