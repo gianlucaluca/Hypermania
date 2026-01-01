@@ -14,5 +14,5 @@ COPY --from=builder /app/target/release/synapse /app/server
 EXPOSE 9000/tcp
 EXPOSE 9001/udp
 
-CMD ["/app/server", "--http-port", "9000", "--relay-port", "9002"]
+CMD ["/app/server", "--http-port", "9000", "--relay-port", "9001"]
 

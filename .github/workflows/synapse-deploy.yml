@@ -68,6 +68,5 @@ jobs:
               --restart unless-stopped \
               -p 9000:9000/tcp \
               -p 9001:9001/udp \
-              -p 9002:9002/udp \
               "$IMAGE"
 

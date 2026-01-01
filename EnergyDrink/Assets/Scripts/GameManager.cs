@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     [Header("Servers")]
     public string ServerIp = "144.126.152.174";
     public int HttpPort = 9000;
-    public int RelayPort = 9001;
+    public int RelayPort = 9002;
 
     [SerializeField]
     private GameObject _bob1;

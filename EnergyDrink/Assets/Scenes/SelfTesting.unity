@@ -285,7 +285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07918cab6ac737a4abc1aaa65b76670a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ServerIp: 127.0.0.1
+  ServerIp: 144.126.152.174
   HttpPort: 9000
   RelayPort: 9001
   _bob1: {fileID: 1329067101}
@@ -418,7 +418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07918cab6ac737a4abc1aaa65b76670a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ServerIp: 127.0.0.1
+  ServerIp: 144.126.152.174
   HttpPort: 9000
   RelayPort: 9001
   _bob1: {fileID: 0}
