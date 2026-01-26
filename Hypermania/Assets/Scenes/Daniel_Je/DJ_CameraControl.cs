@@ -1,92 +1,71 @@
-using UnityEngine;
 using System.Collections.Generic;
-using System.ComponentModel;
+using UnityEngine;
+
 public class DJ_CameraControl : MonoBehaviour
 {
-    private GameObject MainCamera;
     private Camera Camera;
-    private bool Zoom = false;
 
     [SerializeField]
-    private float ZoomOffset = 0.5f;
+    private float CameraSpeed = 10;
+
     [SerializeField]
-    private float CameraSpeed = 5;
+    private Vector2 XBounds = new Vector2(0, 20);
+
     [SerializeField]
-    private Vector3 CameraOffset = new Vector3(0, -3, -10);
-    [SerializeField]
-    private Vector2 XBounds = new Vector2(-10000f, 10000f);
-    [SerializeField]
-    private Vector2 YBounds = new Vector2(-10000f, 10000f);
+    private Vector2 YBounds = new Vector2(-10, 10);
     private Vector3 Center = new Vector3(0, 0, 0);
-    private float ZoomTarget = 5f;
     private List<Vector2> InterestPoints = new List<Vector2>();
 
     void Start()
     {
-        MainCamera = gameObject;
-        Camera = MainCamera.GetComponent<Camera>();
+        Camera = this.GetComponent<Camera>();
     }
 
-    void Update()
+    public void UpdateCamera(List<Vector2> interestPoints, float zoom, float time)
     {
+        UpdateInterestPoints(interestPoints);
         UpdateCenter();
         //Interpolation to center
-        transform.position = Vector3.Lerp(transform.position, Center, CameraSpeed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, Center, CameraSpeed * time);
         //Interpolation to zoom
-        Camera.orthographicSize = Mathf.Lerp(Camera.orthographicSize, ZoomTarget, CameraSpeed * Time.deltaTime);
-        // Replace with hitstop call later on
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            ToggleZoom();
-        }
+        Camera.orthographicSize = Mathf.Lerp(Camera.orthographicSize, zoom, CameraSpeed * time);
     }
 
-    void ToggleZoom()
-    {
-        if (Zoom == false)
-        {
-            ZoomTarget -= ZoomOffset;
-            Zoom = true;
-        }
-        else
-        {
-            ZoomTarget += ZoomOffset;
-            Zoom = false;
-        }
-    }
     // Recalculates the center of interestPoints
     void UpdateCenter()
     {
-        //Calculating center of interestPoints
         if (InterestPoints.Count == 0)
-        {
             return;
-        }
-        Vector3 NewCenter = new Vector3(0, 0, 0);
-        foreach (Vector3 point in InterestPoints)
-        {
-            NewCenter += new Vector3(point.x, point.y, 0);
-        }
+
+        Vector2 NewCenter = Vector2.zero;
+        foreach (Vector2 point in InterestPoints)
+            NewCenter += point;
+
         NewCenter /= InterestPoints.Count;
-        //Adding CameraOffset
-        NewCenter += CameraOffset;
-        //Binding center
-        if (NewCenter.x < XBounds.x)
-        {
-            NewCenter.x = XBounds.x;
-        } else if (NewCenter.x > XBounds.y)
-        {
-            NewCenter.x = XBounds.y;
-        } else if (NewCenter.y < YBounds.x)
-        {
-            NewCenter.y = YBounds.x;
-        } else if (NewCenter.y > YBounds.y)
-        {
-            NewCenter.y = YBounds.y;
-        }
-        Center = NewCenter;
+        // Calculating visual area given aspect and zoom
+        float halfHeight = Camera.orthographicSize;
+        float halfWidth = Camera.orthographicSize * Camera.aspect;
+
+        float minX = XBounds.x + halfWidth;
+        float maxX = XBounds.y - halfWidth;
+        float minY = YBounds.x + halfHeight;
+        float maxY = YBounds.y - halfHeight;
+
+        // Clamping Camera View
+        if (minX > maxX)
+            NewCenter.x = (XBounds.x + XBounds.y) * 0.5f;
+        else
+            NewCenter.x = Mathf.Clamp(NewCenter.x, minX, maxX);
+
+        if (minY > maxY)
+            NewCenter.y = (YBounds.x + YBounds.y) * 0.5f;
+        else
+            NewCenter.y = Mathf.Clamp(NewCenter.y, minY, maxY);
+
+        Center = new Vector3(NewCenter.x, NewCenter.y, transform.position.z);
     }
-    public void UpdateInterestPoints(List<Vector2> Points)
+
+    private void UpdateInterestPoints(List<Vector2> Points)
     {
         InterestPoints = Points;
     }

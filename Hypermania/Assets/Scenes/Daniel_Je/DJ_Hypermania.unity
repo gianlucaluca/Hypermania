@@ -360,11 +360,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91e01c6518ae235428334e902b0cde91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ZoomOffset: 0.5
-  CameraSpeed: 5
-  CameraOffset: {x: 0, y: 3, z: -10}
-  XBounds: {x: -10000, y: 10000}
-  YBounds: {x: -10000, y: 10000}
+  CameraSpeed: 10
+  XBounds: {x: -5, y: 5}
+  YBounds: {x: 0, y: 5}
 --- !u!1 &556815171
 GameObject:
   m_ObjectHideFlags: 0
