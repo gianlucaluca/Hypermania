@@ -14,6 +14,7 @@ namespace Design
         public AnimatorOverrideController AnimationController;
         public float Speed;
         public float JumpVelocity;
+        public float Health;
         public HitboxData Walk;
         public HitboxData Idle;
         public HitboxData Hit;

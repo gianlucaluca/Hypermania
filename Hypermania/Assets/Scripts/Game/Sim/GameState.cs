@@ -252,6 +252,7 @@ namespace Game.Sim
                                     i % 4,
                                     new ManiaNote
                                     {
+                                        Id = i,
                                         Length = 0,
                                         Tick = stFrame + Mathsf.RoundToInt(ticksPerBeat / 2 * i),
                                     }

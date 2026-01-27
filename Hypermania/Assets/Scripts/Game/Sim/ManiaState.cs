@@ -8,6 +8,7 @@ namespace Game.Sim
     [MemoryPackable]
     public partial struct ManiaNote
     {
+        public int Id;
         public Frame Tick;
         public int Length;
     }

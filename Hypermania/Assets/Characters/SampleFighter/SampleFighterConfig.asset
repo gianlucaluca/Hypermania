@@ -17,6 +17,7 @@ MonoBehaviour:
   AnimationController: {fileID: 22100000, guid: 272c99acac77ff5b785247e7f94e4af8, type: 2}
   Speed: 5
   JumpVelocity: 7
+  Health: 100
   Walk: {fileID: 11400000, guid: dfc1fcb3369533c0da952423a0eaa28e, type: 2}
   Idle: {fileID: 11400000, guid: 40155cbf1b231ec2fafbe00f1855687a, type: 2}
   Hit: {fileID: 11400000, guid: f6a168494d73f2e03a2cfaba3f22e9b2, type: 2}

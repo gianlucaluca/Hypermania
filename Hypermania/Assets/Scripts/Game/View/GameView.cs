@@ -14,19 +14,51 @@ namespace Game.View
         public FighterView[] Fighters => _fighters;
 
         private FighterView[] _fighters;
-        private ManiaView[] _manias;
         private CharacterConfig[] _characters;
-        private float Zoom = 5f;
-
-        public ManiaViewConfig Config;
 
         [SerializeField]
         private DJ_CameraControl CameraControl;
         [SerializeField]
         private DJ_CameraIndicator CameraIndicator;
+        public HealthBarView[] Healthbars;
+
+        [SerializeField]
+        public ManiaView[] Manias;
+
+        private float Zoom = 5f;
+
+        [SerializeField]
+        private CameraControl CameraControl;
+
+        public void OnValidate()
+        {
+            if (Healthbars == null)
+            {
+                throw new InvalidOperationException("Healthbars should exist");
+            }
+            if (Healthbars.Length != 2)
+            {
+                throw new InvalidOperationException("Healthbar length should be 2");
+            }
+            if (CameraControl == null)
+            {
+                throw new InvalidOperationException("Camera control must be assigned to the game view!");
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                if (Healthbars[i] == null)
+                {
+                    throw new InvalidOperationException("Healthbars must be assigned to the game view!");
+                }
+            }
+        }
 
         public void Init(CharacterConfig[] characters)
         {
+            if (characters.Length != 2)
+            {
+                throw new InvalidOperationException("num characters in GameView must be 2");
+            }
             _conductor = GetComponent<Conductor>();
             if (_conductor == null)
             {
@@ -35,7 +67,7 @@ namespace Game.View
                 );
             }
             _fighters = new FighterView[characters.Length];
-            _manias = new ManiaView[characters.Length];
+
             _characters = characters;
             for (int i = 0; i < characters.Length; i++)
             {
@@ -44,11 +76,8 @@ namespace Game.View
                 _fighters[i].transform.SetParent(transform, true);
                 _fighters[i].Init(characters[i]);
 
-                float xPos = i - ((float)characters.Length - 1) / 2;
-                GameObject maniaView = new GameObject("Mania View");
-                _manias[i] = maniaView.AddComponent<ManiaView>();
-                _manias[i].transform.SetParent(transform, true);
-                _manias[i].Init(new Vector2(8f * xPos, 0f), Config);
+                Manias[i].Init();
+                Healthbars[i].SetMaxHealth(characters[i].Health);
             }
             _conductor.Init();
         }
@@ -58,7 +87,7 @@ namespace Game.View
             for (int i = 0; i < _characters.Length; i++)
             {
                 _fighters[i].Render(state.Frame, state.Fighters[i]);
-                _manias[i].Render(state.Frame, state.Manias[i]);
+                Manias[i].Render(state.Frame, state.Manias[i]);
             }
             _conductor.RequestSlice(state.Frame);
 
@@ -67,6 +96,12 @@ namespace Game.View
             {
                 interestPoints.Add((Vector2)state.Fighters[i].Position);
             }
+
+            for (int i = 0; i < _characters.Length; i++)
+            {
+                Healthbars[i].SetHealth((int)state.Fighters[i].Health);
+            }
+
             // Debug testing for zoom, remove later
             if (Input.GetKeyDown(KeyCode.P))
             {
@@ -89,8 +124,7 @@ namespace Game.View
             {
                 _fighters[i].DeInit();
                 Destroy(_fighters[i].gameObject);
-                _manias[i].DeInit();
-                Destroy(_manias[i].gameObject);
+                Manias[i].DeInit();
             }
             _fighters = null;
             _characters = null;
