@@ -4,35 +4,29 @@ using UnityEngine;
 
 namespace Game.View
 {
-    public class DJ_CameraIndicator : MonoBehaviour
+    public class FighterIndicatorManager : MonoBehaviour
     {
         [SerializeField]
         private GameObject TrackerPrefab;
 
-        private DJ_CameraControl CameraControl;
-
         private Dictionary<int, FighterView> NotVisibleFighters = new Dictionary<int, FighterView>();
 
         private Dictionary<int, GameObject> Trackers = new Dictionary<int, GameObject>();
-        private Camera Cam;
 
-        void Start()
-        {
-            CameraControl = this.gameObject.GetComponent<DJ_CameraControl>();
-            Cam = this.GetComponent<Camera>();
-        }
+        [SerializeField]
+        private Camera Camera;
 
         public void Track(FighterView[] _fighters)
         {
             NotVisibleFighters.Clear();
 
+            Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera);
             //Adding all nonvisible fighters as key value pairs, fighter number -> FighterView
             //Key value pairs are for if in the future, you would want to add different trackers for each fighter
             for (int i = 0; i < _fighters.Length; i++)
             {
                 //Detecting if visible or not
 
-                Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Cam);
                 bool v = GeometryUtility.TestPlanesAABB(
                     planes,
                     _fighters[i].gameObject.GetComponent<Renderer>().bounds
@@ -49,7 +43,7 @@ namespace Game.View
                 Vector3 fighterPos = f.Value.transform.position;
 
                 // Convert to viewport coordinates
-                Vector3 vp = Cam.WorldToViewportPoint(fighterPos);
+                Vector3 vp = Camera.WorldToViewportPoint(fighterPos);
 
                 //If fighter is behind the camera, flip the viewport point
                 if (vp.z < 0)
@@ -61,7 +55,7 @@ namespace Game.View
                 vp.z = Mathf.Abs(vp.z);
 
                 //Convert back to world position for tracker
-                Vector3 newPos = Cam.ViewportToWorldPoint(vp);
+                Vector3 newPos = Camera.ViewportToWorldPoint(vp);
 
                 //Rotate tracker toward fighter
                 Vector3 toFighter = fighterPos - newPos;
@@ -73,6 +67,7 @@ namespace Game.View
                 if (!Trackers.ContainsKey(f.Key))
                 {
                     t = Instantiate(TrackerPrefab, newPos, rot);
+                    t.transform.SetParent(transform, true);
                     Trackers.Add(f.Key, t);
                 }
                 else
