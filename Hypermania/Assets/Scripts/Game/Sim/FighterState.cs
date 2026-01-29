@@ -37,6 +37,7 @@ namespace Game.Sim
         /// Set to a value that marks the first frame in which the character should return to neutral.
         /// </summary>
         public Frame StateEnd { get; private set; }
+        public Frame ImmunityEnd { get; private set; }
 
         public FighterFacing FacingDir;
 
@@ -57,19 +58,23 @@ namespace Game.Sim
             state.State = CharacterState.Idle;
             state.StateStart = Frame.FirstFrame;
             state.StateEnd = Frame.Infinity;
+            state.ImmunityEnd = Frame.FirstFrame;
+            state.ComboedCount = 0;
             state.InputH = new InputHistory();
             // TODO: character dependent?
             state.Health = (sfloat)config.Health;
             state.FacingDir = facingDirection;
             return state;
         }
+
         public void DoFrameStart()
         {
-            if (State == CharacterState.Idle)
+            if (State == CharacterState.Idle || State == CharacterState.Jump || State == CharacterState.Walk)
             {
                 ComboedCount = 0;
             }
         }
+
         public FighterLocation Location(GlobalConfig config)
         {
             if (Position.y > (sfloat)config.GroundY)
@@ -162,14 +167,16 @@ namespace Game.Sim
             int tick = frame - StateStart;
 
             bool canStartAttack =
-            State == CharacterState.Idle ||
-            State == CharacterState.Walk ||
-            State == CharacterState.Jump ||
-            // allow cancelling out of attacks after a few frames:
-            (State == CharacterState.LightAttack && tick >= 10) ||
-            (State == CharacterState.SuperAttack && tick >= 10);
+                State == CharacterState.Idle
+                || State == CharacterState.Walk
+                || State == CharacterState.Jump
+                ||
+                // allow cancelling out of attacks after a few frames:
+                (State == CharacterState.LightAttack && tick >= 10)
+                || (State == CharacterState.SuperAttack && tick >= 10);
 
-            if (!canStartAttack) return;
+            if (!canStartAttack)
+                return;
             if (InputH.PressedRecently(InputFlags.LightAttack, 8))
             {
                 switch (Location(config))
@@ -280,11 +287,17 @@ namespace Game.Sim
 
         public void ApplyHit(Frame frame, BoxProps props)
         {
+            if (ImmunityEnd > frame)
+            {
+                return;
+            }
             State = CharacterState.Hit;
             StateStart = frame;
             // Apply Hit/collision stuff is done after the player is actionable, so if the player needs to be
             // inactionable for "one more frame"
             StateEnd = frame + props.HitstunTicks + 1;
+            // TODO: fixme, just to prevent multi hit
+            ImmunityEnd = frame + 7;
             // TODO: if high enough, go knockdown
             Health -= props.Damage;
 
