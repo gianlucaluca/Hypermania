@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Game;
 using UnityEditor;
 using UnityEngine;
@@ -9,12 +10,43 @@ namespace Design.Animation.Editors
     {
         public void DrawLeft(MoveBuilderModel m, int tps)
         {
-            m.CharacterPrefab = (GameObject)
+            EditorGUI.BeginChangeCheck();
+            var newPrefab = (GameObject)
                 EditorGUILayout.ObjectField("Character Prefab", m.CharacterPrefab, typeof(GameObject), false);
 
-            m.Clip = (AnimationClip)EditorGUILayout.ObjectField("Animation Clip", m.Clip, typeof(AnimationClip), false);
+            var newClip = (AnimationClip)
+                EditorGUILayout.ObjectField("Animation Clip", m.Clip, typeof(AnimationClip), false);
 
-            m.Data = (HitboxData)EditorGUILayout.ObjectField("Move Data (Asset)", m.Data, typeof(HitboxData), false);
+            var newData = (HitboxData)
+                EditorGUILayout.ObjectField("Move Data (Asset)", m.Data, typeof(HitboxData), false);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                bool prefabChanged = newPrefab != m.CharacterPrefab;
+                bool clipChanged = newClip != m.Clip;
+                bool dataChanged = newData != m.Data;
+
+                m.CharacterPrefab = newPrefab;
+                m.Clip = newClip;
+                m.Data = newData;
+
+                if (clipChanged || dataChanged)
+                    m.ResetTimelineSelection();
+                if (prefabChanged)
+                {
+                    m.VisibilityModel.RebuildVisibilityCache();
+                }
+            }
+
+            EditorGUILayout.Space(8);
+
+            if (m.CharacterPrefab)
+            {
+                if (GUILayout.Button("Refresh Caches"))
+                {
+                    m.VisibilityModel.RebuildVisibilityCache();
+                }
+            }
 
             EditorGUILayout.Space(8);
 
@@ -26,14 +58,15 @@ namespace Design.Animation.Editors
 
             if (GUILayout.Button("Initialize Data"))
                 m.BindDataToClipLength(m, tps);
-            EditorGUILayout.Space(6);
+
+            EditorGUILayout.Space(8);
 
             EditorGUILayout.LabelField("Controls", EditorStyles.boldLabel);
             DrawControls(m);
-            EditorGUILayout.Space(6);
+            EditorGUILayout.Space(8);
             EditorGUILayout.LabelField("Box List", EditorStyles.boldLabel);
             DrawBoxList(m);
-            EditorGUILayout.Space(6);
+            EditorGUILayout.Space(8);
             EditorGUILayout.LabelField("Selected Box", EditorStyles.boldLabel);
             DrawSelectedBoxInspector(m);
 
@@ -106,6 +139,26 @@ namespace Design.Animation.Editors
                 if (GUILayout.Button("Set Hitboxes from Previous Frame (Ctrl F)"))
                     m.SetBoxesFromPreviousFrame();
             }
+
+            EditorGUILayout.Space(6);
+            using (new EditorGUI.DisabledScope(m.SelectedBoxIndex < 0 || m.SelectedBoxIndex >= frame.Boxes.Count))
+            {
+                if (GUILayout.Button("Copy Box Props (Ctrl C)"))
+                    m.CopySelectedBoxProps();
+                using (new EditorGUI.DisabledScope(!m.HasCopiedBoxProps))
+                {
+                    if (GUILayout.Button("Paste Box Props (Ctrl V)"))
+                        m.PasteBoxPropsToSelected();
+                }
+            }
+            if (GUILayout.Button("Copy Frame (Ctrl Shift C)"))
+                m.CopyCurrentFrameData();
+
+            using (new EditorGUI.DisabledScope(!m.HasCopiedFrame))
+            {
+                if (GUILayout.Button("Paste Frame (Ctrl Shift V)"))
+                    m.PasteFrameDataToCurrentFrame();
+            }
         }
 
         private void DrawBoxList(MoveBuilderModel m)
@@ -164,6 +217,12 @@ namespace Design.Animation.Editors
             m.SetBox(m.SelectedBoxIndex, box);
         }
 
+        public void DrawVisibilityPanelHeader()
+        {
+            EditorGUILayout.LabelField("Visibility", EditorStyles.boldLabel);
+            EditorGUILayout.Space(4);
+        }
+
         public void DrawToolbar(MoveBuilderModel m)
         {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
@@ -171,6 +230,13 @@ namespace Design.Animation.Editors
                 GUILayout.Label("Move Builder", EditorStyles.toolbarButton);
 
                 GUILayout.FlexibleSpace();
+
+                m.VisibilityModel.ShowVisibilityPanel = GUILayout.Toggle(
+                    m.VisibilityModel.ShowVisibilityPanel,
+                    "Visibility",
+                    EditorStyles.toolbarButton,
+                    GUILayout.Width(80)
+                );
 
                 using (new EditorGUI.DisabledScope(m == null || !m.HasUnsavedChanges))
                 {

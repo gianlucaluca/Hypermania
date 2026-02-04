@@ -79,6 +79,7 @@ namespace Design.Animation.Editors
             }
 
             SyncPrefabFromModel(model);
+            ApplyVisibility(model.VisibilityModel);
 
             if (_previewGO == null)
             {
@@ -121,8 +122,6 @@ namespace Design.Animation.Editors
 
         private void SyncPrefabFromModel(MoveBuilderModel model)
         {
-            // No injection: the Model never sees the preview GO.
-            // The view recreates its preview GO whenever the Model’s prefab reference changes.
             int prefabId = model.CharacterPrefab.GetInstanceID();
             if (_previewGO != null && prefabId == _lastPrefabId)
                 return;
@@ -134,6 +133,26 @@ namespace Design.Animation.Editors
             _previewGO.hideFlags = HideFlags.HideAndDontSave;
             _previewGO.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             _previewGO.transform.localScale = Vector3.one;
+        }
+
+        private void ApplyVisibility(MoveBuilderVisibilityModel model)
+        {
+            if (_previewGO == null || model == null)
+                return;
+
+            Transform root = _previewGO.transform;
+
+            // If a parent is hidden, Unity will hide children automatically when parent is inactive.
+            // We apply the direct toggles as active states.
+            for (int i = 0; i < model.VisibilityNodes.Count; i++)
+            {
+                var n = model.VisibilityNodes[i];
+                bool visible = model.GetPathVisible(n.Path);
+
+                Transform t = root.Find(n.Path);
+                if (t != null && t.gameObject.activeSelf != visible)
+                    t.gameObject.SetActive(visible);
+            }
         }
 
         private void HandleViewInput(Rect rect)

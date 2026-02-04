@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using Utils.SoftFloat;
@@ -11,16 +13,41 @@ namespace Design.Animation.Editors
         public GameObject CharacterPrefab;
         public AnimationClip Clip;
         public HitboxData Data;
-        public HitboxData RevertData;
+        public MoveBuilderVisibilityModel VisibilityModel;
 
-        public int CurrentTick;
+        public int CurrentTick = 0;
         public int SelectedBoxIndex = -1;
-        private bool _hasUnsavedChanges;
+        private HitboxData _lastData;
+        private int _savedValueHash;
 
-        public bool HasUnsavedChanges => _hasUnsavedChanges;
+        public bool HasUnsavedChanges
+        {
+            get
+            {
+                if (!Data)
+                    return false;
+
+                // When the user selects a different asset, treat the newly selected asset as "saved" initially.
+                if (!ReferenceEquals(Data, _lastData))
+                {
+                    _lastData = Data;
+                    _savedValueHash = Data.GetHashCode();
+                    return false;
+                }
+
+                return Data.GetHashCode() != _savedValueHash;
+            }
+        }
 
         public bool HasAllInputs => CharacterPrefab && Clip && Data;
         public int TotalTicks => Data ? Mathf.Max(1, Data.TotalTicks) : 1;
+
+        public MoveBuilderModel()
+        {
+            VisibilityModel = new MoveBuilderVisibilityModel(this);
+            CurrentTick = 0;
+            SelectedBoxIndex = -1;
+        }
 
         public float CurrentTimeSeconds(int tps) => CurrentTick / (float)Mathf.Max(1, tps);
 
@@ -235,7 +262,90 @@ namespace Design.Animation.Editors
 
             MarkDirty();
         }
+
+        private bool _hasCopiedBoxProps;
+        private BoxProps _copiedBoxProps;
+        public bool HasCopiedBoxProps => _hasCopiedBoxProps;
+
+        public void CopySelectedBoxProps()
+        {
+            var frame = GetCurrentFrame();
+            if (frame == null)
+                return;
+            if (SelectedBoxIndex < 0 || SelectedBoxIndex >= frame.Boxes.Count)
+                return;
+
+            _copiedBoxProps = frame.Boxes[SelectedBoxIndex].Props;
+            _hasCopiedBoxProps = true;
+        }
+
+        public void PasteBoxPropsToSelected()
+        {
+            if (!_hasCopiedBoxProps)
+                return;
+
+            var frame = GetCurrentFrame();
+            if (frame == null)
+                return;
+            if (SelectedBoxIndex < 0 || SelectedBoxIndex >= frame.Boxes.Count)
+                return;
+
+            var cur = frame.Boxes[SelectedBoxIndex];
+            if (cur.Props == _copiedBoxProps)
+                return;
+
+            RecordUndo("Paste Box Props");
+
+            cur.Props = _copiedBoxProps;
+            frame.Boxes[SelectedBoxIndex] = cur;
+
+            MarkDirty();
+        }
+
+        private bool _hasCopiedFrame;
+        private FrameData _copiedFrame;
+
+        public bool HasCopiedFrame => _hasCopiedFrame;
+
+        public void CopyCurrentFrameData()
+        {
+            var frame = GetCurrentFrame();
+            if (frame == null)
+                return;
+
+            _copiedFrame = frame.Clone();
+            _hasCopiedFrame = true;
+        }
+
+        public void PasteFrameDataToCurrentFrame()
+        {
+            if (!_hasCopiedFrame)
+                return;
+
+            var frame = GetCurrentFrame();
+            if (frame == null)
+                return;
+
+            RecordUndo("Paste Frame Data");
+
+            frame.CopyFrom(_copiedFrame);
+
+            if (SelectedBoxIndex >= frame.Boxes.Count)
+                SelectedBoxIndex = frame.Boxes.Count - 1;
+            if (frame.Boxes.Count == 0)
+                SelectedBoxIndex = -1;
+
+            MarkDirty();
+        }
+
+        public void ResetTimelineSelection()
+        {
+            CurrentTick = 0;
+            SelectedBoxIndex = -1;
+        }
+
         #endregion
+
 
         #region Helpers
         public void SaveAsset()
@@ -246,7 +356,8 @@ namespace Design.Animation.Editors
             EditorUtility.SetDirty(Data);
             AssetDatabase.SaveAssets();
 
-            _hasUnsavedChanges = false;
+            _lastData = Data;
+            _savedValueHash = Data.GetHashCode();
         }
 
         private void MarkDirty()
@@ -254,7 +365,6 @@ namespace Design.Animation.Editors
             if (Data)
             {
                 EditorUtility.SetDirty(Data);
-                _hasUnsavedChanges = true;
             }
         }
 
