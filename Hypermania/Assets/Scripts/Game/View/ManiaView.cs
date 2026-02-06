@@ -121,7 +121,8 @@ namespace Game.View
             if (!_activeNotes.ContainsKey(note.Id))
             {
                 noteView = Instantiate(Config.Notes[channel]);
-                noteView.transform.SetParent(transform);
+                //ensure that scale is 1
+                noteView.transform.SetParent(transform, false);
             }
             else
             {

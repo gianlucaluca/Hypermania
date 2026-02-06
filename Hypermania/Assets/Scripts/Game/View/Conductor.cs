@@ -86,7 +86,7 @@ public class Conductor : MonoBehaviour
 
     public void RequestSlice(Frame frame)
     {
-        double startSeconds = frame.No / 64.0;
+        double startSeconds = (float)frame.No / GameManager.TPS;
         int startSample = (int)Math.Round(startSeconds * _sampleRate);
         RequestSlice(startSample);
     }
