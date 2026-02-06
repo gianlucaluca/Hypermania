@@ -164,7 +164,7 @@ MonoBehaviour:
           rawValue: 1038937712
       Props:
         Kind: 1
-        Damage: 0
+        Damage: 5
         HitstunTicks: 12
         BlockstunTicks: 0
         StartsRhythmCombo: 0
@@ -231,7 +231,7 @@ MonoBehaviour:
           rawValue: 1038937712
       Props:
         Kind: 1
-        Damage: 0
+        Damage: 5
         HitstunTicks: 12
         BlockstunTicks: 0
         StartsRhythmCombo: 0
@@ -298,7 +298,7 @@ MonoBehaviour:
           rawValue: 1038937712
       Props:
         Kind: 1
-        Damage: 0
+        Damage: 5
         HitstunTicks: 12
         BlockstunTicks: 0
         StartsRhythmCombo: 0
@@ -365,7 +365,7 @@ MonoBehaviour:
           rawValue: 1038937712
       Props:
         Kind: 1
-        Damage: 0
+        Damage: 5
         HitstunTicks: 12
         BlockstunTicks: 0
         StartsRhythmCombo: 0
@@ -432,7 +432,7 @@ MonoBehaviour:
           rawValue: 1038937712
       Props:
         Kind: 1
-        Damage: 0
+        Damage: 5
         HitstunTicks: 12
         BlockstunTicks: 0
         StartsRhythmCombo: 0
