@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 using Utils;
 using Utils.SoftFloat;
 
+
 namespace Game.Sim
 {
     public enum FighterFacing
@@ -30,6 +31,7 @@ namespace Game.Sim
         public int ComboedCount;
         public InputHistory InputH;
         public int Lives;
+        public sfloat Burst;
 
         public CharacterState State { get; private set; }
         public Frame StateStart { get; private set; }
@@ -71,6 +73,7 @@ namespace Game.Sim
             state.Health = config.Health;
             state.FacingDir = facingDirection;
             state.Lives = lives;
+            state.Burst = 0;
             return state;
         }
 
@@ -300,7 +303,7 @@ namespace Game.Sim
             }
         }
 
-        public void ApplyHit(Frame frame, BoxProps props)
+        public void ApplyHit(Frame frame, BoxProps props, CharacterConfig config)
         {
             if (ImmunityEnd > frame)
             {
@@ -316,6 +319,9 @@ namespace Game.Sim
             // TODO: if high enough, go knockdown
             Health -= props.Damage;
 
+            Burst += props.Damage;
+            Burst = Mathsf.Clamp(Burst, sfloat.Zero, config.BurstMax);
+            
             Velocity = props.Knockback;
 
             ComboedCount++;
