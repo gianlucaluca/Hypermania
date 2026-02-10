@@ -87,9 +87,11 @@ namespace Game.Runners
                     case RollbackRequestKind.LoadGameStateReq:
                         var loadReq = request.GetLoadGameStateReq();
                         loadReq.Cell.Load(out _curState);
+                        _view.RollbackRender(_curState);
                         break;
                     case RollbackRequestKind.AdvanceFrameReq:
                         _curState.Advance(request.GetAdvanceFrameRequest().Inputs, _characters, _config);
+                        _view.RollbackRender(_curState);
                         break;
                 }
             }

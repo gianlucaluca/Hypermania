@@ -5,6 +5,7 @@ using Game.Sim;
 using Game.View.Fighters;
 using Game.View.Mania;
 using UnityEngine;
+using Utils;
 
 namespace Game.View
 {
@@ -13,6 +14,9 @@ namespace Game.View
     public class GameView : MonoBehaviour
     {
         private Conductor _conductor;
+        private HashSet<SfxEvent> _sfx;
+        private Frame _rollbackStart;
+
         public FighterView[] Fighters => _fighters;
 
         private FighterView[] _fighters;
@@ -44,6 +48,9 @@ namespace Game.View
 
         [SerializeField]
         private RoundTimerView _roundTimerView;
+
+        [SerializeField]
+        private SfxManager _sfxManager;
 
         public void OnValidate()
         {
@@ -111,6 +118,8 @@ namespace Game.View
                 _burstBars[i].SetMaxBurst((float)characters[i].BurstMax);
             }
             _conductor.Init();
+            _sfx = new HashSet<SfxEvent>();
+            _rollbackStart = Frame.NullFrame;
         }
 
         public void Render(in GameState state, GlobalConfig config, InfoOverlayDetails overlayDetails)
@@ -148,6 +157,43 @@ namespace Game.View
             }
             _overlayView.Render(overlayDetails);
             _roundTimerView.DisplayRoundTimer(state.Frame, state.RoundEnd);
+
+            if (_rollbackStart == Frame.NullFrame)
+            {
+                throw new InvalidOperationException("rollback start frame cannot be null");
+            }
+            _sfxManager.InvalidateAndPlay(_rollbackStart, state.Frame, _sfx);
+            _rollbackStart = Frame.NullFrame;
+            _sfx.Clear();
+        }
+
+        public void RollbackRender(in GameState state)
+        {
+            // gather all sfx from states in the current rollback process
+            if (_rollbackStart == Frame.NullFrame)
+            {
+                _rollbackStart = state.Frame;
+            }
+            DoSfx(state);
+        }
+
+        private void DoSfx(in GameState state)
+        {
+            for (int i = 0; i < _characters.Length; i++)
+            {
+                if (state.Fighters[i].State == CharacterState.Hit && state.Frame == state.Fighters[i].StateStart)
+                {
+                    // TODO: check other fighter
+                    _sfx.Add(
+                        new SfxEvent
+                        {
+                            Kind = SfxKind.MediumPunch,
+                            StartFrame = state.Frame,
+                            Hash = i,
+                        }
+                    );
+                }
+            }
         }
 
         public void DeInit()
@@ -160,6 +206,7 @@ namespace Game.View
             }
             _fighters = null;
             _characters = null;
+            _sfx = null;
         }
     }
 }

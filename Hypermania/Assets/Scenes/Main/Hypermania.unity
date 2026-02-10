@@ -889,6 +889,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1739994606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1739994607}
+  - component: {fileID: 1739994608}
+  m_Layer: 0
+  m_Name: SfxManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1739994607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739994606}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2114326935}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1739994608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739994606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3961dde1d7b77c719b485a8acacf87f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _sfxLibrary: {fileID: 11400000, guid: 61c4ee3e22f2d896f8a436433812414d, type: 2}
+  _fadeOutDuration: 0.25
 --- !u!114 &2098230095 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6744504729447252797, guid: eeccba413df6b419591053b3c19f3a34, type: 3}
@@ -1025,6 +1071,7 @@ GameObject:
   - component: {fileID: 2114326934}
   - component: {fileID: 2114326937}
   - component: {fileID: 2114326936}
+  - component: {fileID: 2114326938}
   m_Layer: 0
   m_Name: GameView
   m_TagString: Untagged
@@ -1061,6 +1108,7 @@ MonoBehaviour:
   - {fileID: 2106073376}
   _overlayView: {fileID: 1260646850}
   _roundTimerView: {fileID: 1267712684}
+  _sfxManager: {fileID: 1739994608}
 --- !u!4 &2114326935
 Transform:
   m_ObjectHideFlags: 0
@@ -1076,6 +1124,7 @@ Transform:
   m_Children:
   - {fileID: 562816628700700722}
   - {fileID: 1480199431}
+  - {fileID: 1739994607}
   m_Father: {fileID: 556815173}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &2114326936
@@ -1189,6 +1238,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _songClip: {fileID: 8300000, guid: 7eaa589c8e014834e9cff995a2d85c77, type: 3}
   _maxQueuedSlices: 32
+--- !u!114 &2114326938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114326933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3961dde1d7b77c719b485a8acacf87f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _sfxLibrary: {fileID: 0}
+  _fadeOutDuration: 0.25
 --- !u!1 &562816628700700719
 GameObject:
   m_ObjectHideFlags: 0
