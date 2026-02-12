@@ -105,7 +105,6 @@ namespace Netcode.P2P
         private Callback<GameLobbyJoinRequested_t> _joinRequestedCb;
         private CallResult<LobbyCreated_t> _lobbyCreatedCallResult;
         private Callback<LobbyDataUpdate_t> _lobbyDataUpdateCb;
-        private bool _waitingForPlayers;
 
         private TaskCompletionSource<CSteamID> _lobbyCreatedTcs;
         private TaskCompletionSource<bool> _lobbyEnterTcs;
@@ -206,7 +205,6 @@ namespace Netcode.P2P
                 CSteamID host = SteamMatchmaking.GetLobbyOwner(_currentLobby);
                 Debug.Log($"[Matchmaking] Received START. host={host.m_SteamID}, me={SteamUser.GetSteamID()}");
 
-                SteamMatchmaking.RequestLobbyData(_currentLobby);
                 OnStartWithPlayers?.Invoke(players);
             }
         }
@@ -246,49 +244,6 @@ namespace Netcode.P2P
             );
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(builtStartMsg);
             SteamMatchmaking.SendLobbyChatMsg(_currentLobby, bytes, bytes.Length);
-        }
-
-        private List<CSteamID> GetPlayersFromLobbyData()
-        {
-            if (!_currentLobby.IsValid())
-                throw new InvalidOperationException("Lobby is not valid.");
-
-            string handleCntStr = SteamMatchmaking.GetLobbyData(_currentLobby, HANDLE_CNT);
-            if (string.IsNullOrEmpty(handleCntStr))
-            {
-                Debug.Log("[Matchmaking] No handles lobby data present.");
-                return null;
-            }
-            if (!int.TryParse(handleCntStr, out int handleCnt) || handleCnt <= 0)
-            {
-                throw new InvalidOperationException($"Invalid handle count '{handleCntStr}'.");
-            }
-
-            var result = new List<CSteamID>(handleCnt);
-            for (int i = 0; i < handleCnt; i++)
-            {
-                string key = $"{HANDLE_NUM}_{i}";
-                string steamIdStr = SteamMatchmaking.GetLobbyData(_currentLobby, key);
-
-                if (string.IsNullOrEmpty(steamIdStr))
-                {
-                    throw new InvalidOperationException($"Missing lobby data key '{key}'.");
-                }
-
-                if (!ulong.TryParse(steamIdStr, out ulong steamIdU64))
-                {
-                    throw new InvalidOperationException($"Invalid SteamID value '{steamIdStr}' for '{key}'.");
-                }
-
-                var steamId = new CSteamID(steamIdU64);
-                if (!steamId.IsValid())
-                {
-                    throw new InvalidOperationException($"SteamID '{steamIdU64}' is not valid.");
-                }
-
-                result.Add(steamId);
-            }
-            return result;
         }
 
         private bool TryParseStartMessage(string text, List<CSteamID> players)
