@@ -745,7 +745,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Runner: {fileID: 286925405}
-  Started: 0
 --- !u!1 &652384486
 GameObject:
   m_ObjectHideFlags: 0
