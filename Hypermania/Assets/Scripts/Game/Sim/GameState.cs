@@ -140,7 +140,7 @@ namespace Game.Sim
 
         public void Advance(GameOptions options, (GameInput input, InputStatus status)[] inputs)
         {
-            ManiaEvents.Clear(); 
+            
             RealFrame += 1;
             if (inputs.Length != options.Players.Length || options.Players.Length != Fighters.Length)
             {
@@ -276,6 +276,7 @@ namespace Game.Sim
             {
                 Fighters[i].FaceTowards(Fighters[i ^ 1].Position);
             }
+            ManiaEvents.Clear(); 
         }
 
         public bool FightersDead()

@@ -73,9 +73,9 @@ namespace Game.View.Mania
         public void DoViewEvents(in GameState state, VfxManager vfx, SfxManager sfx)
         {
             for (int i = 0; i < state.ManiaEvents.Count; i++) {
-                // TODO DELETE THESE
-                float x = Config.Anchors[2].localPosition.x;
-                float y = Config.Anchors[2].localPosition.y;
+                // // TODO DELETE THESE
+                 float x = Config.Anchors[2].localPosition.x;
+                 float y = Config.Anchors[2].localPosition.y;
                 if (state.ManiaEvents[i].Kind == ManiaEventKind.Hit)
                 {
                     
@@ -100,7 +100,7 @@ namespace Game.View.Mania
                     Debug.Log("Created hit vfx");
                 }
                 else if (state.ManiaEvents[i].Kind == ManiaEventKind.Missed) {
-                    if (state.ManiaEvents[i].Offset == -300) { // test value change later
+                    if (state.ManiaEvents[i].Offset > 50) { // test value change later
                         sfx.AddDesired(
                         new ViewEvent<SfxEvent>
                         {
