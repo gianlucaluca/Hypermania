@@ -10,15 +10,7 @@ namespace Game.View.Events.Vfx
 
         public override void StartEffect(ViewEvent<VfxEvent> ev)
         {
-            transform.position = new Vector3(
-                ev.Event.Position.x - 1,
-                ev.Event.Position.y + 0.75f,
-                transform.position.z
-            );
-            transform.localScale =
-                ev.Event.Direction.x < 0
-                    ? new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z)
-                    : transform.localScale;
+            transform.position = new Vector3(ev.Event.Position.x, ev.Event.Position.y, transform.position.z);
             _vfx = GetComponent<VisualEffect>();
             _vfx.Play();
         }
